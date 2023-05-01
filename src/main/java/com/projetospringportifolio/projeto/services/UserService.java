@@ -2,9 +2,11 @@ package com.projetospringportifolio.projeto.services;
 
 import com.projetospringportifolio.projeto.entities.User;
 import com.projetospringportifolio.projeto.repositories.UserRepository;
+import com.projetospringportifolio.projeto.services.exceptions.DatabaseException;
 import com.projetospringportifolio.projeto.services.exceptions.ResourceNotFoundException;
-import jakarta.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,7 +31,13 @@ public class UserService {
   }
 
   public void delete(Long id){
-    repository.deleteById(id);
+    try {
+      repository.deleteById(id);
+    } catch (DataIntegrityViolationException e) {
+      throw new DatabaseException(e.getMessage());
+    } catch (RuntimeException e){
+      throw new ResourceNotFoundException(id);
+    }
   }
 
   public User update(Long id, User obj){
